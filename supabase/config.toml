@@ -1,0 +1,5 @@
+[functions.quest-result]
+verify_jwt = true
+
+[functions.chat-reply]
+verify_jwt = true
