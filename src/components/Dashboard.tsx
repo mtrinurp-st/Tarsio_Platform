@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase, type Quest, type QuestQuestion, type QuestCategory } from '@/lib/supabase';
 import { translate } from '@/lib/i18n';
 import { achievements, getLevel } from '@/lib/gamify';
-import type { Language, Mood } from '@/lib/types';
+import type { Mood } from '@/lib/types';
 import { TarsyMascot, type TarsyMood } from '@/components/TarsyMascot';
 import { ProfileView } from '@/components/ProfileView';
 import { HelpCenter } from '@/components/HelpCenter';
@@ -11,7 +11,7 @@ import {
   ArrowUpRight, BarChart3, Bot, Check, ChevronRight, CircleHelp, Flame,
   HeartHandshake, Lock, Menu, MessageCircle, MoreHorizontal, PenLine,
   Send, Sparkles, Target, Trophy, WalletCards, X, Zap, Star, Compass,
-  Baby, Heart, Award, Copy, UserPlus, TrendingUp, User, Calendar,
+  Baby, Heart, Award, Copy, UserPlus, User, Calendar,
 } from 'lucide-react';
 
 const categoryIcons: Record<string, typeof Target> = {
@@ -37,7 +37,7 @@ const moodConfig: { key: Mood; emoji: string; color: string }[] = [
 type ChatMsg = { from: 'tarsy' | 'you'; text: string };
 
 export function Dashboard() {
-  const { profile, language, setLanguage, signOut, refreshProfile } = useAuth();
+  const { profile, language, setLanguage, refreshProfile } = useAuth();
   const t = (k: string, p?: Record<string, string | number>) => translate(language, k, p);
   const lang = language;
 
@@ -285,7 +285,7 @@ export function Dashboard() {
   }
 
   async function generateResult(finalAnswers: { question: string; answer: string }[]) {
-    if (!activeQuest) return;
+    if (!activeQuest || !profile) return;
     setQuestLoading(true);
     setTarsyMood('think');
     try {
@@ -407,7 +407,7 @@ export function Dashboard() {
 
   useEffect(() => {
     if (prevAchvIds.size > 0) {
-      const newOnes = unlockedIds.difference(prevAchvIds);
+      const newOnes = new Set([...unlockedIds].filter(id => !prevAchvIds.has(id)));
       if (newOnes.size > 0) {
         const newId = newOnes.values().next().value;
         if (newId) {

@@ -1,3 +1,55 @@
+-- Fresh-install repair: these parent rows were originally created manually.
+-- Existing installations do not replay this already-applied migration.
+-- Capture the current live quest content (4 categories, 5 quests, 25 questions)
+-- This migration makes the existing manually-seeded content reproducible.
+-- Uses ON CONFLICT DO NOTHING for idempotency.
+
+-- Category 1: Career & Purpose
+INSERT INTO quest_categories (id, slug, name_id, name_en, icon, sort_order, is_archived)
+VALUES ('a6faacdc-1ce7-431b-83f9-8eb5cb40ea0e', 'career', 'Karier & Tujuan', 'Career & Purpose', 'target', 1, false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Category 2: Self-Discovery
+INSERT INTO quest_categories (id, slug, name_id, name_en, icon, sort_order, is_archived)
+VALUES ('efe03dd5-a071-488a-a25a-3b7c2d92e5c1', 'self_discovery', 'Penemuan Diri', 'Self-Discovery', 'sparkles', 2, false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Category 3: Financial Wellness
+INSERT INTO quest_categories (id, slug, name_id, name_en, icon, sort_order, is_archived)
+VALUES ('439d73e4-4acd-4e5d-8aee-4ba8c4b60eda', 'financial', 'Keuangan', 'Financial Wellness', 'wallet', 3, false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Category 4: Relationship & Boundaries
+INSERT INTO quest_categories (id, slug, name_id, name_en, icon, sort_order, is_archived)
+VALUES ('9e851295-0054-4257-ba30-6ae9b9383aa9', 'relationship', 'Hubungan & Batasan', 'Relationship & Boundaries', 'heart', 4, false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Quest 1: Cek Energi Kerjamu (career, free, 50xp)
+INSERT INTO quests (id, category_id, title_id, title_en, description_id, description_en, tier_required, xp_reward, sort_order, is_published, is_archived)
+VALUES ('b8b933f3-948c-41e0-baf9-452247a5c9c7', 'a6faacdc-1ce7-431b-83f9-8eb5cb40ea0e', 'Cek Energi Kerjamu', 'Your Work-Life Vibe Check', 'Kenali energi kerja yang bikin kamu benar-benar hidup.', 'Discover the kind of work energy that makes you feel truly alive.', 'free', 50, 1, true, false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Quest 2: Lounge Overthinking (self_discovery, free, 50xp)
+INSERT INTO quests (id, category_id, title_id, title_en, description_id, description_en, tier_required, xp_reward, sort_order, is_published, is_archived)
+VALUES ('5ea6ab47-519a-4edf-bbc7-e02c0d94dfed', 'efe03dd5-a071-488a-a25a-3b7c2d92e5c1', 'Lounge Overthinking', 'Overthinking Lounge', 'Petakan pikiran yang berisik jadi langkah yang lebih ringan.', 'Turn noisy thoughts into lighter, smaller steps.', 'free', 50, 1, true, false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Quest 3: Peta Kekuatan Diri (self_discovery, premium, 70xp)
+INSERT INTO quests (id, category_id, title_id, title_en, description_id, description_en, tier_required, xp_reward, sort_order, is_published, is_archived)
+VALUES ('27f2e051-4eed-403d-8759-d564a735600f', 'efe03dd5-a071-488a-a25a-3b7c2d92e5c1', 'Peta Kekuatan Diri', 'Strength Map', 'Temukan kekuatan tersembunyi yang udah ada di dalam dirimu.', 'Discover the hidden strengths already within you.', 'premium', 70, 2, true, false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Quest 4: Isi Dompet vs Mental (financial, premium, 70xp)
+INSERT INTO quests (id, category_id, title_id, title_en, description_id, description_en, tier_required, xp_reward, sort_order, is_published, is_archived)
+VALUES ('16877893-247c-492e-aea0-f259e498991f', '439d73e4-4acd-4e5d-8aee-4ba8c4b60eda', 'Isi Dompet vs Mental', 'Wallet vs Mind', 'Bikin hubungan yang lebih jujur dengan uangmu.', 'Build a more honest relationship with your money.', 'premium', 70, 1, true, false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Quest 5: Batas yang Baik (relationship, free, 50xp)
+INSERT INTO quests (id, category_id, title_id, title_en, description_id, description_en, tier_required, xp_reward, sort_order, is_published, is_archived)
+VALUES ('3f116a06-dc38-4945-93db-4eac99c527f6', '9e851295-0054-4257-ba30-6ae9b9383aa9', 'Batas yang Baik', 'Healthy Boundaries', 'Belajar bilang tidak tanpa rasa bersalah.', 'Learn to say no without guilt.', 'free', 50, 2, true, false)
+ON CONFLICT (id) DO NOTHING;
+
+
 -- Add 3 more questions per quest (sort_order 3, 4, 5) to reach 5 questions each
 -- Quest 1: Cek Energi Kerjamu
 INSERT INTO quest_questions (quest_id, question_type, question_id, question_en, options, sort_order) VALUES

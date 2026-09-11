@@ -46,8 +46,10 @@ export function TarsyMascot({ size = 120, mood = 'idle', lang, onClick }: {
       className={`tarsy-mascot ${bounce ? 'bounce' : ''} ${wiggle ? 'wiggle' : ''} mood-${mood}`}
       style={{ width: size, height: size }}
       onClick={onClick}
-      role="button"
-      tabIndex={0}
+      role={onClick ? 'button' : 'img'}
+      aria-label={lang === 'id' ? 'Tarsy, teman bertumbuhmu' : 'Tarsy, your growth companion'}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); } } : undefined}
     >
       <div className="tarsy-aura" />
       <svg viewBox="0 0 120 120" className="tarsy-svg" style={{ width: size, height: size }}>
