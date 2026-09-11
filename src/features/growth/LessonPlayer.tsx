@@ -1,3 +1,4 @@
+import { Copy } from "./copy";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -211,7 +212,10 @@ export function Widget({
       Number(a.needs || 0) + Number(a.wants || 0) + Number(a.saving || 0);
     return (
       <div className={"g-callout " + (total === 100 ? "success" : "")}>
-        <strong>Total alokasi: {total}%</strong>
+        <strong>
+          <Copy text="Total alokasi:" />
+          {total}%
+        </strong>
         <div className="budget-bar">
           {["needs", "wants", "saving"].map((x, i) => (
             <i
@@ -223,14 +227,20 @@ export function Widget({
             />
           ))}
         </div>
-        {total !== 100 && <p>Sesuaikan hingga total 100%.</p>}
+        {total !== 100 && (
+          <p>
+            <Copy text="Sesuaikan hingga total 100%." />
+          </p>
+        )}
       </div>
     );
   }
   if (kind === "finance")
     return (
       <div className="g-callout">
-        <strong>Progres terhadap target</strong>
+        <strong>
+          <Copy text="Progres terhadap target" />
+        </strong>
         {[
           "Dana darurat",
           "Batas utang",
@@ -252,8 +262,7 @@ export function Widget({
           );
         })}
         <small>
-          Perbandingan terhadap target pribadimu, bukan penilaian kesehatan
-          finansial.
+          <Copy text="Perbandingan terhadap target pribadimu, bukan penilaian kesehatan finansial." />
         </small>
       </div>
     );
@@ -269,13 +278,18 @@ export function Widget({
     const max = Math.max(...values, 1);
     return (
       <div className="g-callout">
-        <strong>Proyeksi ilustratif</strong>
+        <strong>
+          <Copy text="Proyeksi ilustratif" />
+        </strong>
         <div className="projection">
           {values.map((v, i) => (
             <div key={i}>
               <b>{money(v)}</b>
               <div style={{ height: 30 + (v / max) * 100 }} />
-              <span>{[1, 3, 5][i]} tahun</span>
+              <span>
+                {[1, 3, 5][i]}
+                <Copy text="tahun" />
+              </span>
             </div>
           ))}
         </div>
@@ -290,12 +304,17 @@ export function Widget({
     }
     return (
       <div className="g-callout">
-        <strong>Distribusi 24 jammu</strong>
+        <strong>
+          <Copy text="Distribusi 24 jammu" />
+        </strong>
         {Object.entries(counts).map(([k, v]) => (
           <div className="g-metric" key={k}>
             <span>{k}</span>
             <progress max={24} value={v} />
-            <b>{v} jam</b>
+            <b>
+              {v}
+              <Copy text="jam" />
+            </b>
           </div>
         ))}
       </div>
@@ -319,17 +338,27 @@ export function Widget({
     const i = counts.indexOf(Math.max(...counts));
     return (
       <div className="g-callout">
-        <strong>Kecenderungan: {names[i]}</strong>
-        <p>{explanations[i]} Gaya dapat berubah menurut situasi.</p>
+        <strong>
+          <Copy text="Kecenderungan:" />
+          {names[i]}
+        </strong>
+        <p>
+          {explanations[i]}
+          <Copy text="Gaya dapat berubah menurut situasi." />
+        </p>
       </div>
     );
   }
   if (kind === "script")
     return (
       <blockquote className="g-callout">
-        “Aku merasa {String(a.feeling || "…")} ketika {String(a.when || "…")}.
-        Aku membutuhkan {String(a.need || "…")}. Bisakah kita{" "}
-        {String(a.request || "…")}?”
+        <Copy text="“Aku merasa" />
+        {String(a.feeling || "…")}
+        <Copy text="ketika" />
+        {String(a.when || "…")}
+        <Copy text=". Aku membutuhkan" />
+        {String(a.need || "…")}
+        <Copy text=". Bisakah kita" /> {String(a.request || "…")}?”
       </blockquote>
     );
   if (kind === "reframe")
@@ -339,7 +368,9 @@ export function Widget({
           a.affirmation ||
             "Aku sedang belajar menjadi lebih baik untuk diriku.",
         )}
-        <small>TARSIO · CATATAN UNTUK DIRI</small>
+        <small>
+          <Copy text="TARSIO · CATATAN UNTUK DIRI" />
+        </small>
       </blockquote>
     );
   return null;
@@ -457,24 +488,29 @@ export default function LessonPlayer({
             max={lesson.steps.length}
           />
           <span>
-            <Sparkles size={17} /> 50 XP
+            <Sparkles size={17} />
+            <Copy text="50 XP" />
           </span>
         </header>
         {done ? (
           <div className="g-celebrate">
             <TarsyMascot size={150} lang="id" mood="celebrate" />
-            <span className="g-eyebrow">SATU LANGKAH LEBIH DEKAT</span>
+            <span className="g-eyebrow">
+              <Copy text="SATU LANGKAH LEBIH DEKAT" />
+            </span>
             <h1>
-              Kamu sudah hadir
+              <Copy text="Kamu sudah hadir" />
               <br />
-              untuk dirimu.
+              <Copy text="untuk dirimu." />
             </h1>
             <p>
-              {lesson.title} selesai. Refleksimu tersimpan di Life Blueprint.
+              <Copy text={lesson.title} />
+              <Copy text="selesai. Refleksimu tersimpan di Life Blueprint." />
             </p>
             <div className="reward-row">
               <span>
-                <CheckCircle2 /> Quest selesai
+                <CheckCircle2 />
+                <Copy text="Quest selesai" />
               </span>
               <span>
                 <Sparkles />{" "}
@@ -486,14 +522,17 @@ export default function LessonPlayer({
               </span>
             </div>
             <button className="g-btn" onClick={close}>
-              Lanjutkan perjalanan <ArrowRight size={18} />
+              <Copy text="Lanjutkan perjalanan" />
+              <ArrowRight size={18} />
             </button>
           </div>
         ) : (
           <>
             <div className="player-body">
               <span className="g-eyebrow">
-                {lesson.title} · LANGKAH {p.step + 1}/{lesson.steps.length}
+                <Copy text={lesson.title} />
+                <Copy text="· LANGKAH" />
+                {p.step + 1}/{lesson.steps.length}
               </span>
               <h1 ref={heading} tabIndex={-1}>
                 {step.title}
@@ -516,7 +555,8 @@ export default function LessonPlayer({
                 <Widget kind={step.widget} answers={p.answers} />
               )}
               <p className="g-private">
-                <ShieldCheck size={15} /> Refleksi ini hanya untukmu.
+                <ShieldCheck size={15} />
+                <Copy text="Refleksi ini hanya untukmu." />
               </p>
             </div>
             <footer>
@@ -541,7 +581,8 @@ export default function LessonPlayer({
                       save(n);
                     }}
                   >
-                    <ArrowLeft size={17} /> Kembali
+                    <ArrowLeft size={17} />
+                    <Copy text="Kembali" />
                   </button>
                 )}
                 <button

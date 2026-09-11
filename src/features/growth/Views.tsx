@@ -1,9 +1,10 @@
+import { Copy } from "./copy";
 import { useCallback, useEffect, useState } from "react";
 import {
   Award,
   Check,
   ChevronRight,
-  Copy,
+  Copy as CopyIcon,
   Download,
   Gem,
   Plus,
@@ -52,14 +53,22 @@ export function Missions({
   return (
     <>
       <div className="g-page-head">
-        <span className="g-eyebrow">SEDIKIT, TAPI KONSISTEN</span>
-        <h1>Misi hari ini</h1>
-        <p>Langkah kecilmu tetap berarti.</p>
+        <span className="g-eyebrow">
+          <Copy text="SEDIKIT, TAPI KONSISTEN" />
+        </span>
+        <h1>
+          <Copy text="Misi hari ini" />
+        </h1>
+        <p>
+          <Copy text="Langkah kecilmu tetap berarti." />
+        </p>
       </div>
       <section className="g-card">
-        <h2>Apa kabarmu hari ini?</h2>
+        <h2>
+          <Copy text="Apa kabarmu hari ini?" />
+        </h2>
         <p>
-          Pilih yang paling mendekati perasaanmu. Semua perasaan boleh hadir.
+          <Copy text="Pilih yang paling mendekati perasaanmu. Semua perasaan boleh hadir." />
         </p>
         <div className="g-chips mission-moods">
           {[
@@ -83,7 +92,9 @@ export function Missions({
         </div>
       </section>
       <section className="g-card">
-        <h2>Tiga cara untuk hadir</h2>
+        <h2>
+          <Copy text="Tiga cara untuk hadir" />
+        </h2>
         {dailyQuests(s).map((q) => {
           const claimed = Object.prototype.hasOwnProperty.call(
             s.events,
@@ -97,7 +108,10 @@ export function Missions({
               <div>
                 <strong>{q.title}</strong>
                 <p>
-                  {q.description} · +{q.xp} XP · {q.gems} poin
+                  {q.description} · +{q.xp}
+                  <Copy text="XP ·" />
+                  {q.gems}
+                  <Copy text="poin" />
                 </p>
               </div>
               <button
@@ -107,7 +121,8 @@ export function Missions({
               >
                 {claimed ? (
                   <>
-                    <Check size={16} /> Diambil
+                    <Check size={16} />
+                    <Copy text="Diambil" />
                   </>
                 ) : q.ready ? (
                   "Ambil reward"
@@ -119,7 +134,9 @@ export function Missions({
           );
         })}
         <label className="g-field">
-          <span>Satu hal yang kamu syukuri hari ini</span>
+          <span>
+            <Copy text="Satu hal yang kamu syukuri hari ini" />
+          </span>
           <textarea
             value={reflection}
             onChange={(e) => setReflection(e.target.value)}
@@ -138,11 +155,14 @@ export function Missions({
             })
           }
         >
-          Simpan refleksi <Check size={17} />
+          <Copy text="Simpan refleksi" />
+          <Check size={17} />
         </button>
       </section>
       <section className="g-card">
-        <h2>Aksi 24 jam</h2>
+        <h2>
+          <Copy text="Aksi 24 jam" />
+        </h2>
         {plans?.completedAt ? (
           Array.from({ length: 6 }, (_, i) => i)
             .filter((i) => plans.answers["action" + i])
@@ -184,16 +204,21 @@ export function Missions({
             })
         ) : (
           <div className="g-empty">
-            <p>Siapkan dua aksi kecil untuk kondisi finansialmu.</p>
+            <p>
+              <Copy text="Siapkan dua aksi kecil untuk kondisi finansialmu." />
+            </p>
             <button className="g-btn secondary" onClick={() => open("2-2")}>
-              Buat rencana <ChevronRight size={16} />
+              <Copy text="Buat rencana" />
+              <ChevronRight size={16} />
             </button>
           </div>
         )}
       </section>
       {s.notifications && (
         <section className="g-card">
-          <h2>Komitmen jangka panjang</h2>
+          <h2>
+            <Copy text="Komitmen jangka panjang" />
+          </h2>
           {commitment?.completedAt && commitment.answers.remind ? (
             Array.from({ length: 13 }, (_, i) => i + 1).map((week) => {
               const due =
@@ -202,7 +227,8 @@ export function Missions({
               return (
                 <div className="checkin-row" key={week}>
                   <span>
-                    Minggu {week} · {new Date(due).toLocaleDateString("id-ID")}
+                    <Copy text="Minggu" />
+                    {week} · {new Date(due).toLocaleDateString("id-ID")}
                   </span>
                   <button
                     className="g-btn small secondary"
@@ -226,13 +252,16 @@ export function Missions({
             })
           ) : (
             <p>
-              Pengingat mingguan muncul setelah menyelesaikan Komitmen 90 Hari.
+              <Copy text="Pengingat mingguan muncul setelah menyelesaikan Komitmen 90 Hari." />
             </p>
           )}
           {career?.completedAt && career.answers.careerReminder && (
             <div className="followup">
               <strong>{String(career.answers.careerAction)}</strong>
-              <p>Target: {String(career.answers.due)}</p>
+              <p>
+                <Copy text="Target:" />
+                {String(career.answers.due)}
+              </p>
               <button
                 className="g-btn secondary"
                 disabled={s.actions.career === "done"}
@@ -246,7 +275,9 @@ export function Missions({
           )}
           {sixMonths && future?.answers.future && (
             <div className="followup">
-              <strong>Surat untuk dirimu di masa depan</strong>
+              <strong>
+                <Copy text="Surat untuk dirimu di masa depan" />
+              </strong>
               <p>
                 {now >= sixMonths.getTime()
                   ? String(future.answers.letter)
@@ -258,7 +289,9 @@ export function Missions({
       )}
       {s.progress["4-2"]?.completedAt && (
         <section className="g-card">
-          <h2>Tujuh hari tanpa layar di zonamu</h2>
+          <h2>
+            <Copy text="Tujuh hari tanpa layar di zonamu" />
+          </h2>
           <div className="g-chips">
             {Array.from({ length: 7 }, (_, i) => i + 1).map((i) => (
               <button
@@ -273,7 +306,8 @@ export function Missions({
                   })
                 }
               >
-                Hari {i} {s.actions["detox:" + i] && <Check size={15} />}
+                <Copy text="Hari" />
+                {i} {s.actions["detox:" + i] && <Check size={15} />}
               </button>
             ))}
           </div>
@@ -295,22 +329,34 @@ export function Blueprint({
   return (
     <>
       <div className="g-page-head">
-        <span className="g-eyebrow">CERITA YANG TERUS TUMBUH</span>
-        <h1>Life Blueprint</h1>
-        <p>Potongan kecil perjalananmu, dalam satu tempat.</p>
+        <span className="g-eyebrow">
+          <Copy text="CERITA YANG TERUS TUMBUH" />
+        </span>
+        <h1>
+          <Copy text="Life Blueprint" />
+        </h1>
+        <p>
+          <Copy text="Potongan kecil perjalananmu, dalam satu tempat." />
+        </p>
       </div>
       <section className="blueprint-cover">
         <div>
-          <span className="g-eyebrow">BLUEPRINT MILIK</span>
+          <span className="g-eyebrow">
+            <Copy text="BLUEPRINT MILIK" />
+          </span>
           <h2>{s.name}</h2>
           <p>
-            Level {level(s.xp)} · {evolution(s.xp)}
+            <Copy text="Level" />
+            {level(s.xp)} · {evolution(s.xp)}
           </p>
           <div className="g-chips">
-            <span>{s.xp} XP</span>
+            <span>
+              {s.xp}
+              <Copy text="XP" />
+            </span>
             <span>
               {Object.values(s.progress).filter((p) => p.completedAt).length}{" "}
-              quest selesai
+              <Copy text="quest selesai" />
             </span>
           </div>
         </div>
@@ -318,7 +364,9 @@ export function Blueprint({
       </section>
       <section className="g-card">
         <div className="g-section-head">
-          <h2>Jejak pencapaian</h2>
+          <h2>
+            <Copy text="Jejak pencapaian" />
+          </h2>
           <Award />
         </div>
         <div className="badge-grid">
@@ -330,7 +378,9 @@ export function Blueprint({
               </div>
             ))
           ) : (
-            <p>Selesaikan quest pertamamu untuk mendapatkan lencana.</p>
+            <p>
+              <Copy text="Selesaikan quest pertamamu untuk mendapatkan lencana." />
+            </p>
           )}
         </div>
       </section>
@@ -341,7 +391,9 @@ export function Blueprint({
         return (
           <section className="g-card" key={u.id}>
             <div className="g-section-head">
-              <h2>{u.title}</h2>
+              <h2>
+                <Copy text={u.title} />
+              </h2>
               <span>
                 {complete.length}/
                 {catalog.filter((l) => l.unit === u.id).length}
@@ -351,7 +403,7 @@ export function Blueprint({
               complete.map((l) => (
                 <details className="blueprint-entry" key={l.id}>
                   <summary>
-                    {l.title}
+                    <Copy text={l.title} />
                     <ChevronRight size={17} />
                   </summary>
                   {l.steps
@@ -378,14 +430,15 @@ export function Blueprint({
                     className="g-btn small secondary"
                     onClick={() => open(l.id)}
                   >
-                    Buka kembali
+                    <Copy text="Buka kembali" />
                   </button>
                   {l.id === "1-3" && (
                     <button
                       className="g-btn small secondary"
                       onClick={() => exportBlueprint(s, catalog, true, "1-3")}
                     >
-                      <Download size={15} /> Unduh kontrak PDF
+                      <Download size={15} />
+                      <Copy text="Unduh kontrak PDF" />
                     </button>
                   )}
                   {l.id === "3-3" && (
@@ -397,36 +450,42 @@ export function Blueprint({
                         )
                       }
                     >
-                      <Download size={15} /> Kartu afirmasi
+                      <Download size={15} />
+                      <Copy text="Kartu afirmasi" />
                     </button>
                   )}
                 </details>
               ))
             ) : (
-              <p className="muted">Belum ada refleksi. Mulai saat kamu siap.</p>
+              <p className="muted">
+                <Copy text="Belum ada refleksi. Mulai saat kamu siap." />
+              </p>
             )}
           </section>
         );
       })}
       <section className="g-card">
-        <h2>Bawa perjalananmu</h2>
+        <h2>
+          <Copy text="Bawa perjalananmu" />
+        </h2>
         <label className="g-check">
           <input
             type="checkbox"
             checked={include}
             onChange={(e) => setInclude(e.target.checked)}
           />{" "}
-          Sertakan isi refleksi pribadi dalam PDF
+          <Copy text="Sertakan isi refleksi pribadi dalam PDF" />
         </label>
         <p className="g-private">
-          <ShieldCheck size={15} /> Secara default, ekspor hanya berisi progres
-          dan pencapaian.
+          <ShieldCheck size={15} />
+          <Copy text="Secara default, ekspor hanya berisi progres dan pencapaian." />
         </p>
         <button
           className="g-btn"
           onClick={() => exportBlueprint(s, catalog, include)}
         >
-          <Download size={18} /> Unduh Life Blueprint
+          <Download size={18} />
+          <Copy text="Unduh Life Blueprint" />
         </button>
       </section>
     </>
@@ -442,31 +501,48 @@ export function Shop({
   return (
     <>
       <div className="g-page-head">
-        <span className="g-eyebrow">HADIAH UNTUK LANGKAH KECIL</span>
-        <h1>Toko Tarsy</h1>
-        <p>Gunakan Poin yang kamu dapatkan dari misi.</p>
+        <span className="g-eyebrow">
+          <Copy text="HADIAH UNTUK LANGKAH KECIL" />
+        </span>
+        <h1>
+          <Copy text="Toko Tarsy" />
+        </h1>
+        <p>
+          <Copy text="Gunakan Poin yang kamu dapatkan dari misi." />
+        </p>
       </div>
       <div className="wallet-banner">
-        <Gem /> <strong>{s.gems} Poin</strong>
-        <span>Didapat dari progres, tanpa pembayaran.</span>
+        <Gem />{" "}
+        <strong>
+          {s.gems}
+          <Copy text="Poin" />
+        </strong>
+        <span>
+          <Copy text="Didapat dari progres, tanpa pembayaran." />
+        </span>
       </div>
       <div className="shop-grid">
         <section className="g-card">
           <div className="shop-art blue">
             <Snowflake size={64} />
           </div>
-          <h2>Streak Freeze</h2>
+          <h2>
+            <Copy text="Streak Freeze" />
+          </h2>
           <p>
-            Jaga streak ketika kamu perlu satu hari jeda. Maksimal dua
-            tersimpan.
+            <Copy text="Jaga streak ketika kamu perlu satu hari jeda. Maksimal dua tersimpan." />
           </p>
-          <span className="stock">Dimiliki: {s.freezes}/2</span>
+          <span className="stock">
+            <Copy text="Dimiliki:" />
+            {s.freezes}/2
+          </span>
           <button
             className="g-btn"
             disabled={s.gems < 20 || s.freezes >= 2}
             onClick={() => void act({ type: "buy", item: "freeze" })}
           >
-            <Gem size={18} /> 20 poin
+            <Gem size={18} />
+            <Copy text="20 poin" />
           </button>
         </section>
         <section className="g-card">
@@ -474,9 +550,15 @@ export function Shop({
             <TarsyMascot size={110} lang="id" />
             <span>✦</span>
           </div>
-          <h2>Aura Penjelajah</h2>
-          <p>Cahaya keemasan untuk menemani Tarsy di perjalananmu.</p>
-          <span className="stock">Kosmetik permanen</span>
+          <h2>
+            <Copy text="Aura Penjelajah" />
+          </h2>
+          <p>
+            <Copy text="Cahaya keemasan untuk menemani Tarsy di perjalananmu." />
+          </p>
+          <span className="stock">
+            <Copy text="Kosmetik permanen" />
+          </span>
           <button
             className="g-btn"
             disabled={s.gems < 35 || s.cosmetic === "explorer"}
@@ -484,11 +566,13 @@ export function Shop({
           >
             {s.cosmetic === "explorer" ? (
               <>
-                <Check size={18} /> Dimiliki
+                <Check size={18} />
+                <Copy text="Dimiliki" />
               </>
             ) : (
               <>
-                <Gem size={18} /> 35 poin
+                <Gem size={18} />
+                <Copy text="35 poin" />
               </>
             )}
           </button>
@@ -551,26 +635,33 @@ export function Social({
   return (
     <>
       <div className="g-page-head">
-        <span className="g-eyebrow">TUMBUH BARENG, TANPA BANDING-BANDING</span>
-        <h1>Ruang Bersama</h1>
-        <p>Sedikit teman, lebih banyak dukungan.</p>
+        <span className="g-eyebrow">
+          <Copy text="TUMBUH BARENG, TANPA BANDING-BANDING" />
+        </span>
+        <h1>
+          <Copy text="Ruang Bersama" />
+        </h1>
+        <p>
+          <Copy text="Sedikit teman, lebih banyak dukungan." />
+        </p>
       </div>
       {!connected && (
         <div className="g-callout">
           <ShieldCheck size={20} />
           <p>
-            Squad dan liga membutuhkan akun Supabase yang tersambung. Progres
-            perangkatmu tetap bisa digunakan; tidak ada anggota atau peringkat
-            fiktif.
+            <Copy text="Squad dan liga membutuhkan akun Supabase yang tersambung. Progres perangkatmu tetap bisa digunakan; tidak ada anggota atau peringkat fiktif." />
           </p>
         </div>
       )}
       <section className="g-card">
         <div className="g-section-head">
           <h2>
-            <Users size={21} /> Squad kecilmu
+            <Users size={21} />
+            <Copy text="Squad kecilmu" />
           </h2>
-          <span>Maks. 6 orang</span>
+          <span>
+            <Copy text="Maks. 6 orang" />
+          </span>
         </div>
         {data.squad ? (
           <>
@@ -586,7 +677,7 @@ export function Social({
                   )
                 }
               >
-                <Copy size={15} /> {data.squad.code}
+                <CopyIcon size={15} /> {data.squad.code}
               </button>
             </div>
             {data.members.map((m) => (
@@ -595,7 +686,10 @@ export function Social({
                 <div>
                   <strong>{m.name}</strong>
                   <p>
-                    {m.xp} XP · {m.kudos} dukungan
+                    {m.xp}
+                    <Copy text="XP ·" />
+                    {m.kudos}
+                    <Copy text="dukungan" />
                   </p>
                 </div>
                 <button
@@ -603,25 +697,27 @@ export function Social({
                   disabled={busy || m.id === userId}
                   onClick={() => void action("kudos", { recipient: m.id })}
                 >
-                  Beri kudos
+                  <Copy text="Beri kudos" />
                 </button>
               </div>
             ))}
             <small>
-              Maksimal 5 kudos per hari. Isi jurnal tidak dibagikan.
+              <Copy text="Maksimal 5 kudos per hari. Isi jurnal tidak dibagikan." />
             </small>
             <button
               className="g-btn small secondary"
               disabled={busy}
               onClick={() => void action("leave")}
             >
-              Keluar squad
+              <Copy text="Keluar squad" />
             </button>
           </>
         ) : (
           <div className="squad-forms">
             <label className="g-field">
-              <span>Buat squad</span>
+              <span>
+                <Copy text="Buat squad" />
+              </span>
               <input
                 placeholder="Nama squad"
                 maxLength={40}
@@ -633,11 +729,14 @@ export function Social({
                 disabled={!connected || busy || name.trim().length < 3}
                 onClick={() => void action("create", { name })}
               >
-                <Plus size={17} /> Buat squad
+                <Plus size={17} />
+                <Copy text="Buat squad" />
               </button>
             </label>
             <label className="g-field">
-              <span>Punya kode undangan?</span>
+              <span>
+                <Copy text="Punya kode undangan?" />
+              </span>
               <input
                 placeholder="Kode squad"
                 maxLength={20}
@@ -649,15 +748,19 @@ export function Social({
                 disabled={!connected || busy || code.trim().length < 4}
                 onClick={() => void action("join", { code })}
               >
-                Gabung squad
+                <Copy text="Gabung squad" />
               </button>
             </label>
           </div>
         )}
       </section>
       <section className="g-card">
-        <span className="g-eyebrow">REFLEKSI MINGGU INI</span>
-        <h2>Hal kecil apa yang membuatmu merasa didukung?</h2>
+        <span className="g-eyebrow">
+          <Copy text="REFLEKSI MINGGU INI" />
+        </span>
+        <h2>
+          <Copy text="Hal kecil apa yang membuatmu merasa didukung?" />
+        </h2>
         <textarea
           aria-label="Jawaban refleksi squad"
           placeholder="Bagikan hanya yang nyaman kamu ceritakan…"
@@ -670,7 +773,7 @@ export function Social({
           disabled={!data.squad || busy || !body.trim()}
           onClick={() => void action("post", { body }).then(() => setBody(""))}
         >
-          Bagikan ke squad
+          <Copy text="Bagikan ke squad" />
         </button>
         {data.posts.map((p) => (
           <div className="social-post" key={p.id}>
@@ -680,12 +783,16 @@ export function Social({
         ))}
       </section>
       <section className="g-card">
-        <h2>Progres squad</h2>
+        <h2>
+          <Copy text="Progres squad" />
+        </h2>
         <p>
-          Saling mendukung melalui langkah kecil. Liga lintas-squad belum
-          diaktifkan pada revamp ini.
+          <Copy text="Saling mendukung melalui langkah kecil. Liga lintas-squad belum diaktifkan pada revamp ini." />
         </p>
-        <p>XP minggumu: {weeklyXP(s)}</p>
+        <p>
+          <Copy text="XP minggumu:" />
+          {weeklyXP(s)}
+        </p>
       </section>
     </>
   );

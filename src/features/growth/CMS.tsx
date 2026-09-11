@@ -1,7 +1,17 @@
+import { Copy } from "./copy";
 import { useEffect, useState } from "react";
 import { rpc } from "./storage";
-import { Copy, Eye, FileText, Plus, Save, Search, Trash2 } from "lucide-react";
-import { units, type Lesson, type FieldKind } from "./catalog";
+import {
+  Copy as CopyIcon,
+  Eye,
+  FileText,
+  Plus,
+  Save,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { FieldInput } from "./LessonPlayer";
+import { units, type Lesson, type FieldKind, type Answers } from "./catalog";
 export default function CMS({
   catalog,
   onSave,
@@ -84,15 +94,20 @@ export default function CMS({
   return (
     <>
       <div className="g-page-head">
-        <span className="g-eyebrow">CONTENT STUDIO</span>
-        <h1>Ruang racik quest</h1>
-        <p>Kelola alur, pertanyaan, dan publikasi dalam satu tempat.</p>
+        <span className="g-eyebrow">
+          <Copy text="CONTENT STUDIO" />
+        </span>
+        <h1>
+          <Copy text="Ruang racik quest" />
+        </h1>
+        <p>
+          <Copy text="Kelola alur, pertanyaan, dan publikasi dalam satu tempat." />
+        </p>
       </div>
       {device && (
         <div className="g-callout">
           <p>
-            Preview CMS lokal. Perubahan hanya berlaku di perangkat ini. Pada
-            aplikasi tersambung, hanya admin yang bisa mengubah konten.
+            <Copy text="Preview CMS lokal. Perubahan hanya berlaku di perangkat ini. Pada aplikasi tersambung, hanya admin yang bisa mengubah konten." />
           </p>
         </div>
       )}
@@ -100,21 +115,29 @@ export default function CMS({
         <div className="cms-stats">
           <div className="g-card">
             <strong>{analytics.users}</strong>
-            <span>Pengguna</span>
+            <span>
+              <Copy text="Pengguna" />
+            </span>
           </div>
           <div className="g-card">
             <strong>{analytics.completedQuests}</strong>
-            <span>Quest diselesaikan</span>
+            <span>
+              <Copy text="Quest diselesaikan" />
+            </span>
           </div>
           <div className="g-card">
             <strong>{analytics.activeThisWeek}</strong>
-            <span>Aktif minggu ini</span>
+            <span>
+              <Copy text="Aktif minggu ini" />
+            </span>
           </div>
         </div>
       )}
       {!canEdit ? (
         <div className="g-empty">
-          <p>Halaman ini hanya tersedia untuk admin.</p>
+          <p>
+            <Copy text="Halaman ini hanya tersedia untuk admin." />
+          </p>
         </div>
       ) : selected ? (
         <section className="g-card cms-editor">
@@ -123,12 +146,14 @@ export default function CMS({
               className="g-btn small secondary"
               onClick={() => setSelected(null)}
             >
-              ← Daftar konten
+              <Copy text="← Daftar konten" />
             </button>
             <span>{selected.id}</span>
           </div>
           <label className="g-field">
-            <span>Judul quest</span>
+            <span>
+              <Copy text="Judul quest" />
+            </span>
             <input
               value={selected.title}
               onChange={(e) =>
@@ -137,7 +162,9 @@ export default function CMS({
             />
           </label>
           <label className="g-field">
-            <span>Deskripsi</span>
+            <span>
+              <Copy text="Deskripsi" />
+            </span>
             <textarea
               value={selected.description}
               onChange={(e) =>
@@ -147,7 +174,9 @@ export default function CMS({
           </label>
           <div className="form-grid">
             <label className="g-field">
-              <span>Unit</span>
+              <span>
+                <Copy text="Unit" />
+              </span>
               <select
                 value={selected.unit}
                 onChange={(e) =>
@@ -162,7 +191,9 @@ export default function CMS({
               </select>
             </label>
             <label className="g-field">
-              <span>Durasi (menit)</span>
+              <span>
+                <Copy text="Durasi (menit)" />
+              </span>
               <input
                 type="number"
                 min={1}
@@ -185,22 +216,27 @@ export default function CMS({
                 setSelected({ ...selected, published: e.target.checked })
               }
             />{" "}
-            Terbitkan untuk pengguna
+            <Copy text="Terbitkan untuk pengguna" />
           </label>
           {selected.steps.map((st, i) => (
             <details className="cms-step" key={i} open={i === 0}>
               <summary>
-                Langkah {i + 1} · {st.title}
+                <Copy text="Langkah" />
+                {i + 1} · {st.title}
               </summary>
               <label className="g-field">
-                <span>Judul langkah</span>
+                <span>
+                  <Copy text="Judul langkah" />
+                </span>
                 <input
                   value={st.title}
                   onChange={(e) => updateStep(i, "title", e.target.value)}
                 />
               </label>
               <label className="g-field">
-                <span>Petunjuk</span>
+                <span>
+                  <Copy text="Petunjuk" />
+                </span>
                 <textarea
                   value={st.hint}
                   onChange={(e) => updateStep(i, "hint", e.target.value)}
@@ -209,7 +245,9 @@ export default function CMS({
               {st.fields.map((f, j) => (
                 <div className="cms-field" key={j}>
                   <label className="g-field">
-                    <span>Pertanyaan</span>
+                    <span>
+                      <Copy text="Pertanyaan" />
+                    </span>
                     <input
                       value={f.label}
                       onChange={(e) =>
@@ -225,7 +263,9 @@ export default function CMS({
                   </label>
                   <div className="form-grid">
                     <label className="g-field">
-                      <span>Tipe input</span>
+                      <span>
+                        <Copy text="Tipe input" />
+                      </span>
                       <select
                         value={f.kind}
                         onChange={(e) =>
@@ -255,13 +295,17 @@ export default function CMS({
                       </select>
                     </label>
                     <label className="g-field">
-                      <span>ID data (tetap untuk jawaban lama)</span>
+                      <span>
+                        <Copy text="ID data (tetap untuk jawaban lama)" />
+                      </span>
                       <input value={f.id} readOnly />
                     </label>
                   </div>
                   {(f.kind === "choice" || f.kind === "multi") && (
                     <label className="g-field">
-                      <span>Pilihan, satu per baris</span>
+                      <span>
+                        <Copy text="Pilihan, satu per baris" />
+                      </span>
                       <textarea
                         value={(f.options || []).join("\n")}
                         onChange={(e) =>
@@ -330,7 +374,7 @@ export default function CMS({
                           )
                         }
                       />{" "}
-                      Wajib diisi
+                      <Copy text="Wajib diisi" />
                     </label>
                     <button
                       className="g-icon"
@@ -362,7 +406,8 @@ export default function CMS({
                   ])
                 }
               >
-                <Plus size={15} /> Pertanyaan
+                <Plus size={15} />
+                <Copy text="Pertanyaan" />
               </button>
             </details>
           ))}
@@ -389,13 +434,20 @@ export default function CMS({
               })
             }
           >
-            <Plus size={17} /> Tambah langkah
+            <Plus size={17} />
+            <Copy text="Tambah langkah" />
           </button>
+          <details className="g-card">
+            <summary>
+              <Copy text="Preview formulir" />
+            </summary>
+            <CMSPreview key={selected.id} lesson={selected} />
+          </details>
           <div className="cms-save">
             <span role="status">{message}</span>
             <button className="g-btn" disabled={busy} onClick={save}>
               <Save size={17} />
-              {busy ? "Menyimpan…" : "Simpan konten"}
+              <Copy text={busy ? "Menyimpan…" : "Simpan konten"} />
             </button>
           </div>
         </section>
@@ -405,17 +457,23 @@ export default function CMS({
             <div className="g-card">
               <FileText />
               <strong>{catalog.length}</strong>
-              <span>Total quest</span>
+              <span>
+                <Copy text="Total quest" />
+              </span>
             </div>
             <div className="g-card">
               <Eye />
               <strong>{catalog.filter((l) => l.published).length}</strong>
-              <span>Dipublikasikan</span>
+              <span>
+                <Copy text="Dipublikasikan" />
+              </span>
             </div>
             <div className="g-card">
-              <Copy />
+              <CopyIcon />
               <strong>{catalog.filter((l) => !l.published).length}</strong>
-              <span>Draf</span>
+              <span>
+                <Copy text="Draf" />
+              </span>
             </div>
           </div>
           <div className="g-section-head">
@@ -454,17 +512,26 @@ export default function CMS({
                 })
               }
             >
-              <Plus size={16} /> Quest baru
+              <Plus size={16} />
+              <Copy text="Quest baru" />
             </button>
           </div>
           <section className="g-card cms-table">
             <table>
               <thead>
                 <tr>
-                  <th>Quest</th>
-                  <th>Unit</th>
-                  <th>Status</th>
-                  <th>Langkah</th>
+                  <th>
+                    <Copy text="Quest" />
+                  </th>
+                  <th>
+                    <Copy text="Unit" />
+                  </th>
+                  <th>
+                    <Copy text="Status" />
+                  </th>
+                  <th>
+                    <Copy text="Langkah" />
+                  </th>
                   <th />
                 </tr>
               </thead>
@@ -479,7 +546,10 @@ export default function CMS({
                     <tr key={l.id}>
                       <td>
                         <strong>{l.title}</strong>
-                        <small>{l.minutes} menit · 50 XP</small>
+                        <small>
+                          {l.minutes}
+                          <Copy text="menit · 50 XP" />
+                        </small>
                       </td>
                       <td>{units.find((u) => u.id === l.unit)?.short}</td>
                       <td>
@@ -500,7 +570,7 @@ export default function CMS({
                             setMessage("");
                           }}
                         >
-                          Edit
+                          <Copy text="Edit" />
                         </button>
                       </td>
                     </tr>
@@ -511,5 +581,27 @@ export default function CMS({
         </>
       )}
     </>
+  );
+}
+
+function CMSPreview({ lesson }: { lesson: Lesson }) {
+  const [answers, setAnswers] = useState<Answers>({});
+  return (
+    <div className="ugc-stack">
+      {lesson.steps.map((step, i) => (
+        <section key={i}>
+          <h3>{step.title}</h3>
+          <p>{step.hint}</p>
+          {step.fields.map((f) => (
+            <FieldInput
+              key={f.id}
+              field={f}
+              answers={answers}
+              onChange={(id, value) => setAnswers({ ...answers, [id]: value })}
+            />
+          ))}
+        </section>
+      ))}
+    </div>
   );
 }
