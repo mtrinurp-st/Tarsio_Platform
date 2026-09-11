@@ -66,6 +66,8 @@ import { Blueprint, Missions, Shop, Social } from "./Views";
 import { AuthModal, Onboarding } from "./Account";
 import CMS from "./CMS";
 import "./growth.css";
+import { usePreferences } from "./preferences";
+import CommunityQuests from "./CommunityQuests";
 type Page =
   | "learn"
   | "explore"
@@ -74,7 +76,8 @@ type Page =
   | "social"
   | "shop"
   | "settings"
-  | "admin";
+  | "admin"
+  | "community";
 const nav = [
   { id: "learn", label: "Perjalanan", icon: Compass },
   { id: "explore", label: "Jelajahi", icon: BookOpen },
@@ -107,6 +110,8 @@ export default function GrowthApp() {
     [loading, setLoading] = useState(false),
     [cloudReady, setCloudReady] = useState(false);
   const identity = useRef("device");
+  const preferences = usePreferences(userId, s.dark);
+  const { t } = preferences;
   const [catalog, setCatalog] = useState<Lesson[]>(localCatalog),
     [page, setPage] = useState<Page>(() => {
       const p = location.hash.slice(1);
@@ -119,6 +124,7 @@ export default function GrowthApp() {
         "shop",
         "settings",
         "admin",
+        "community",
       ].includes(p)
         ? (p as Page)
         : "learn";
@@ -268,6 +274,7 @@ export default function GrowthApp() {
           "shop",
           "settings",
           "admin",
+          "community",
         ].includes(p)
       )
         setPage(p);
@@ -275,9 +282,7 @@ export default function GrowthApp() {
     window.addEventListener("hashchange", f);
     return () => window.removeEventListener("hashchange", f);
   }, []);
-  useEffect(() => {
-    document.documentElement.dataset.growthTheme = s.dark ? "dark" : "light";
-  }, [s.dark]);
+
   const go = (p: Page) => {
     setPage(p);
     location.hash = p;
@@ -493,7 +498,7 @@ export default function GrowthApp() {
   }
   const streak = effectiveStreak(s);
   return (
-    <div className={"g-app " + (s.dark ? "g-dark" : "")}>
+    <div className={"g-app " + (preferences.dark ? "g-dark" : "")}>
       <a className="skip-link" href="#main-content">
         Lewati ke konten
       </a>
@@ -513,7 +518,17 @@ export default function GrowthApp() {
               onClick={() => go(n.id)}
             >
               <n.icon size={21} />
-              {n.label}
+              {t(
+                n.label,
+                {
+                  learn: "Journey",
+                  explore: "Explore",
+                  missions: "Daily missions",
+                  social: "Friends",
+                  blueprint: "Life Blueprint",
+                  shop: "Tarsy shop",
+                }[n.id],
+              )}
               {n.id === "missions" && (
                 <span className="nav-count">
                   {
@@ -529,6 +544,13 @@ export default function GrowthApp() {
               )}
             </button>
           ))}
+          <button
+            onClick={() => go("community")}
+            className={page === "community" ? "active" : ""}
+          >
+            <Users size={20} />
+            {t("Quest komunitas", "Community quests")}
+          </button>
         </nav>
         <div className="sidebar-bottom">
           <div className="sidebar-note">
@@ -549,7 +571,7 @@ export default function GrowthApp() {
             </button>
           )}
           <button onClick={() => go("settings")}>
-            <Settings size={19} /> Pengaturan
+            <Settings size={20} /> {t("Pengaturan", "Settings")}
           </button>
           <button
             className="profile-link"
@@ -587,20 +609,50 @@ export default function GrowthApp() {
             </button>
             <span>
               {page === "learn"
-                ? "Perjalananmu"
+                ? t("Perjalananmu", "Your journey")
                 : nav.find((n) => n.id === page)?.label ||
-                  (page === "admin" ? "Content Studio" : "Pengaturan")}
+                  (page === "admin"
+                    ? "Content Studio"
+                    : page === "community"
+                      ? t("Quest komunitas", "Community quests")
+                      : t("Pengaturan", "Settings"))}
             </span>
             <span className="top-divider">/</span>
-            <small>Ruang untuk bertumbuh</small>
+            <small>{t("Ruang untuk bertumbuh", "Room to grow")}</small>
           </div>
           <div className="top-stats">
+            <label className="g-language">
+              <span className="sr-only">
+                {t("Bahasa aplikasi", "App language")}
+              </span>
+              <select
+                aria-label={t("Bahasa aplikasi", "App language")}
+                value={preferences.locale}
+                onChange={(e) => {
+                  try {
+                    preferences.update({
+                      locale: e.target.value as "id" | "en",
+                    });
+                  } catch {
+                    notice(
+                      t(
+                        "Preferensi belum tersimpan.",
+                        "Preferences could not be saved.",
+                      ),
+                    );
+                  }
+                }}
+              >
+                <option value="id">ID</option>
+                <option value="en">EN</option>
+              </select>
+            </label>
             <button title="Streak" onClick={() => go("missions")}>
               <Flame className="orange" size={21} />
               <b>{streak}</b>
-              <small>hari</small>
+              <small>{t("hari", "days")}</small>
             </button>
-            <button title="Insight Gems" onClick={() => go("shop")}>
+            <button title="Poin" onClick={() => go("shop")}>
               <Gem className="teal" size={21} />
               <b>{s.gems}</b>
             </button>
@@ -917,6 +969,14 @@ export default function GrowthApp() {
                 device={userId === "device"}
               />
             )}
+            {page === "community" && (
+              <CommunityQuests
+                key={userId}
+                owner={userId}
+                admin={isAdmin}
+                locale={preferences.locale}
+              />
+            )}
             {page === "settings" && (
               <>
                 <div className="g-page-head">
@@ -963,7 +1023,63 @@ export default function GrowthApp() {
                   </form>
                 </section>
                 <section className="g-card">
-                  <h2>Preferensi</h2>
+                  <h2>{t("Preferensi", "Preferences")}</h2>
+                  <label className="setting-row">
+                    <span>{t("Bahasa aplikasi", "App language")}</span>
+                    <select
+                      value={preferences.locale}
+                      onChange={(e) => {
+                        try {
+                          preferences.update({
+                            locale: e.target.value as "id" | "en",
+                          });
+                        } catch {
+                          notice(
+                            t(
+                              "Preferensi belum tersimpan.",
+                              "Preferences could not be saved.",
+                            ),
+                          );
+                        }
+                      }}
+                    >
+                      <option value="id">Bahasa Indonesia</option>
+                      <option value="en">English</option>
+                    </select>
+                  </label>
+                  <label className="setting-row">
+                    <span>{t("Tema", "Theme")}</span>
+                    <select
+                      value={preferences.theme}
+                      onChange={(e) => {
+                        try {
+                          preferences.update({
+                            theme: e.target.value as
+                              "light" | "dark" | "system",
+                          });
+                        } catch {
+                          notice(
+                            t(
+                              "Preferensi belum tersimpan.",
+                              "Preferences could not be saved.",
+                            ),
+                          );
+                        }
+                      }}
+                    >
+                      <option value="system">
+                        {t("Ikuti perangkat", "System")}
+                      </option>
+                      <option value="light">{t("Terang", "Light")}</option>
+                      <option value="dark">{t("Gelap", "Dark")}</option>
+                    </select>
+                  </label>
+                  <p>
+                    {t(
+                      "Preferensi disimpan pada browser ini untuk akun yang sedang digunakan. Sebagian konten perjalanan masih tersedia dalam Bahasa Indonesia.",
+                      "Preferences are saved in this browser for the current account. Some journey content is currently available in Indonesian.",
+                    )}
+                  </p>
                   {(
                     [
                       {
@@ -972,19 +1088,9 @@ export default function GrowthApp() {
                         text: "Buka semua unit tanpa urutan. XP tetap hanya sekali per quest.",
                       },
                       {
-                        key: "dark",
-                        title: "Mode malam",
-                        text: "Tampilan lebih nyaman di ruang redup.",
-                      },
-                      {
                         key: "notifications",
                         title: "Pengingat dalam aplikasi",
                         text: "Lihat tindak lanjut di halaman Misi.",
-                      },
-                      {
-                        key: "publicProfile",
-                        title: "Ikut liga mingguan",
-                        text: "Izinkan nama panggilan dan XP tampil pada peserta liga. Isi jurnal selalu privat.",
                       },
                     ] as const
                   ).map((x) => (
@@ -1007,7 +1113,27 @@ export default function GrowthApp() {
                   ))}
                 </section>
                 <section className="g-card">
-                  <h2>Akun & data</h2>
+                  <h2>{t("Akun & data", "Account & data")}</h2>
+                  <details className="g-callout">
+                    <summary>
+                      {t(
+                        "Privasi dan kerahasiaan",
+                        "Privacy and confidentiality",
+                      )}
+                    </summary>
+                    <p>
+                      {t(
+                        "Jurnal, mood, dan jawaban pribadi tidak dipublikasikan kepada creator quest atau moderator konten. Hanya isi quest yang sengaja kamu ajukan yang masuk antrean review. Jangan menuliskan PIN, OTP, identitas lengkap, atau data orang lain.",
+                        "Journals, moods and private answers are not published to quest creators or content moderators. Only quest content you explicitly submit enters the review queue. Do not include PINs, verification codes, full identifiers or other people’s data.",
+                      )}
+                    </p>
+                    <p>
+                      {t(
+                        "Mode perangkat menyimpan data pada browser ini. Akun tersambung menggunakan pembatasan akses per pemilik; ini bukan enkripsi end-to-end. Ekspor berisi data pribadi, jadi simpan dengan hati-hati.",
+                        "Device mode stores data in this browser. Connected accounts use owner-scoped access controls; this is not end-to-end encryption. Exports contain private data, so store them carefully.",
+                      )}
+                    </p>
+                  </details>
                   <p>{sync}</p>
                   <div className="button-row">
                     <button
@@ -1165,7 +1291,7 @@ export default function GrowthApp() {
                 <div className="league-art">
                   <Trophy size={36} />
                 </div>
-                <h3>Liga Tunas</h3>
+                <h3>Teman satu perjalanan</h3>
                 <p>
                   Tumbuh bareng penjelajah lain.
                   <br />

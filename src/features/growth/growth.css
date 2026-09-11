@@ -2656,3 +2656,72 @@ body {
     font-size: 14px;
   }
 }
+/* Shared preference and community surfaces inherit both themes. */
+.g-language select,
+.setting-row select {
+  background: var(--g-paper);
+  color: var(--g-ink);
+  border: 1px solid var(--g-line);
+  border-radius: 8px;
+  min-height: 44px;
+  padding: 8px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.ugc-stack {
+  display: grid;
+  gap: 16px;
+}
+.ugc-card {
+  display: grid;
+  gap: 12px;
+}
+.ugc-card textarea,
+.ugc-card input,
+.ugc-card select {
+  width: 100%;
+  background: var(--g-paper);
+  color: var(--g-ink);
+  border: 1px solid var(--g-line);
+  border-radius: 8px;
+  padding: 12px;
+}
+.ugc-card input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+}
+.ugc-card fieldset {
+  border: 1px solid var(--g-line);
+  border-radius: 12px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.ugc-card .setting-row {
+  gap: 16px;
+}
+.ugc-card pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}
+.g-app .lucide {
+  stroke-width: 1.75;
+  flex-shrink: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .g-app *,
+  .g-app *::before,
+  .g-app *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

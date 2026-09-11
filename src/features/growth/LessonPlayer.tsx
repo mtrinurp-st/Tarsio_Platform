@@ -16,10 +16,12 @@ import { SESSION_ID } from "./storage";
 import { TarsyMascot } from "@/components/TarsyMascot";
 export function FieldInput({
   field: f,
+  locale = "id",
   answers,
   onChange,
 }: {
   field: Field;
+  locale?: "id" | "en";
   answers: Answers;
   onChange: (id: string, value: Answers[string]) => void;
 }) {
@@ -29,7 +31,9 @@ export function FieldInput({
     <div className={"g-field field-" + f.kind}>
       <label id={id + "-label"} htmlFor={id}>
         {f.label}
-        {!f.required && <small> Opsional</small>}
+        {!f.required && (
+          <small>{locale === "en" ? " Optional" : " Opsional"}</small>
+        )}
       </label>
       {f.hint && <p>{f.hint}</p>}
       {f.kind === "textarea" ? (
@@ -39,7 +43,11 @@ export function FieldInput({
           rows={3}
           maxLength={5000}
           onChange={(e) => onChange(f.id, e.target.value)}
-          placeholder="Tulis dengan bahasamu sendiri…"
+          placeholder={
+            locale === "en"
+              ? "Write in your own words…"
+              : "Tulis dengan bahasamu sendiri…"
+          }
         />
       ) : f.kind === "check" ? (
         <label className="g-check">
@@ -49,7 +57,7 @@ export function FieldInput({
             checked={v === true}
             onChange={(e) => onChange(f.id, e.target.checked)}
           />
-          <span>Ya, aku setuju</span>
+          <span>{locale === "en" ? "Yes, I agree" : "Ya, aku setuju"}</span>
         </label>
       ) : f.kind === "choice" || f.kind === "multi" ? (
         <div className="g-options" role="group" aria-labelledby={id + "-label"}>

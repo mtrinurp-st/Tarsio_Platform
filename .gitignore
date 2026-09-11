@@ -27,3 +27,6 @@ dist-ssr
 !.env.example
 .sites-runtime/
 .test-runtime/
+
+# Supabase CLI cache
+supabase/.temp/

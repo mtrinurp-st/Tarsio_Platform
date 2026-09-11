@@ -20,6 +20,8 @@ Without Supabase configuration, the app starts in **device mode**. Reflections, 
 5. Promote a verified internal account to `profiles.role = 'admin'` using the trusted SQL editor or an operational migration. This cannot be done by a client or by signup metadata.
 6. Rebuild after changing Vite configuration: `npm run build`. Static hosting does not inject runtime Vite variables into an existing bundle.
 
+See the [v5 revamp checkpoint](docs/REVAMP-V5.md) for the latest scope, staged moderation SQL, localization gaps, and release blockers. Earlier capability bullets below describe the previous baseline.
+
 See [launch notes](docs/LAUNCH.md) for production boundaries and rollout details.
 
 ## Implemented experience

@@ -77,6 +77,12 @@ await test("Postgres integration: migrations, forms, rewards, privacy, roles, CM
         ),
       );
     }
+    await db.exec(
+      fs.readFileSync(
+        new URL("../supabase/pending/community_quests.sql", import.meta.url),
+        "utf8",
+      ),
+    );
     for (const [name, id] of Object.entries(ids))
       await db.query(
         "INSERT INTO auth.users(id,email,raw_user_meta_data) VALUES($1,$2,$3)",
@@ -267,6 +273,146 @@ await test("Postgres integration: migrations, forms, rewards, privacy, roles, CM
         await assert.rejects(
           rpc("growth_social_action", ["kudos", { recipient: ids.bob }]),
           /satu squad/,
+        );
+      },
+    );
+    await t.test(
+      "UGC requires review, rejects stale approvals, and keeps responses private",
+      async () => {
+        const content = {
+          title: "A small reflection",
+          description: "Notice a small habit you would like to practice.",
+          language: "en",
+          category: "reflection",
+          minutes: 5,
+          sources: "",
+          questions: [
+            {
+              type: "text",
+              prompt: "What would you like to practice?",
+              options: [],
+            },
+          ],
+        };
+        const mutate = (name, data) =>
+          rpc("ugc_mutate", [name, { expectedUserId: currentUserId, ...data }]);
+        await asUser("alice");
+        const draft = await mutate("save", { content });
+        const key = { id: draft.id, revision: 1 };
+        await asUser("admin");
+        assert.equal((await rpc("ugc_list", ["review"])).length, 0);
+        assert.equal(
+          (await db.query("select * from user_created_quests")).rows.length,
+          0,
+        );
+        await asUser("alice");
+        await assert.rejects(mutate("submit", key), /CONSENT_REQUIRED/);
+        await mutate("submit", { ...key, consent: true });
+        await assert.rejects(
+          mutate("published", { ...key, reason: "This is supportive." }),
+          /FORBIDDEN/,
+        );
+        await assert.rejects(
+          db.query(
+            "update user_created_quests set status='published' where id=$1",
+            [draft.id],
+          ),
+          /permission denied/,
+        );
+        await asUser("admin");
+        const checklist = {
+          objective: true,
+          claims: true,
+          privacy: true,
+          respect: true,
+          clarity: true,
+          rights: true,
+        };
+        await assert.rejects(
+          mutate("published", {
+            ...key,
+            revision: 2,
+            reason: "All checks passed.",
+            checklist,
+          }),
+          /REVISION_CONFLICT/,
+        );
+        await assert.rejects(
+          mutate("published", { ...key, reason: "All checks passed." }),
+          /CHECKLIST_REQUIRED/,
+        );
+        await mutate("published", {
+          ...key,
+          reason: "All checks passed.",
+          checklist,
+        });
+        const own = await mutate("save", { content });
+        await mutate("submit", { ...own, consent: true });
+        await assert.rejects(
+          mutate("published", {
+            ...own,
+            reason: "All checks passed.",
+            checklist,
+          }),
+          /SELF_REVIEW_FORBIDDEN/,
+        );
+        await asUser("bob");
+        const published = await rpc("ugc_list", ["published"]);
+        assert.equal(published.length, 1);
+        assert.equal("creator_id" in published[0], false);
+        await assert.rejects(
+          mutate("respond", { ...key, answers: {} }),
+          /INVALID_ANSWERS/,
+        );
+        await mutate("respond", {
+          ...key,
+          answers: { 0: "My confidential reflection" },
+        });
+        assert.equal(
+          (await db.query("select * from user_quest_responses")).rows.length,
+          1,
+        );
+        await mutate("report", {
+          ...key,
+          reason: "privacy",
+          note: "Please recheck this prompt.",
+        });
+        await asUser("alice");
+        assert.equal(
+          (await db.query("select * from user_quest_responses")).rows.length,
+          0,
+        );
+        assert.equal((await rpc("ugc_list", ["mine"]))[0].reports.length, 0);
+        await assert.rejects(
+          mutate("save", { ...key, content }),
+          /WITHDRAW_BEFORE_EDIT/,
+        );
+        await asUser("admin");
+        assert.equal(
+          (await db.query("select * from user_quest_responses")).rows.length,
+          0,
+        );
+        await mutate("suspended", {
+          ...key,
+          reason: "Privacy report requires investigation.",
+        });
+        await asUser("bob");
+        assert.equal((await rpc("ugc_list", ["published"])).length, 0);
+        await assert.rejects(
+          mutate("respond", { ...key, answers: { 0: "No longer available" } }),
+          /QUEST_UNAVAILABLE/,
+        );
+        await asUser("alice");
+        await mutate("withdraw", key);
+        const next = await mutate("save", {
+          ...key,
+          content: { ...content, title: "A revised reflection" },
+        });
+        assert.equal(next.revision, 2);
+        assert.equal((await rpc("ugc_list", ["published"])).length, 0);
+        await assert.rejects(
+          mutate("submit", { ...next, consent: true, expectedUserId: ids.bob }),
+          /ACCOUNT_CHANGED/,
         );
       },
     );

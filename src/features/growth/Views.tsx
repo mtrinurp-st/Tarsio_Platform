@@ -10,7 +10,6 @@ import {
   ShieldCheck,
   Snowflake,
   Sparkles,
-  Trophy,
   Users,
 } from "lucide-react";
 import { units, type Lesson } from "./catalog";
@@ -98,7 +97,7 @@ export function Missions({
               <div>
                 <strong>{q.title}</strong>
                 <p>
-                  {q.description} · +{q.xp} XP · {q.gems} gems
+                  {q.description} · +{q.xp} XP · {q.gems} poin
                 </p>
               </div>
               <button
@@ -445,10 +444,10 @@ export function Shop({
       <div className="g-page-head">
         <span className="g-eyebrow">HADIAH UNTUK LANGKAH KECIL</span>
         <h1>Toko Tarsy</h1>
-        <p>Gunakan Insight Gems yang kamu dapatkan dari misi.</p>
+        <p>Gunakan Poin yang kamu dapatkan dari misi.</p>
       </div>
       <div className="wallet-banner">
-        <Gem /> <strong>{s.gems} Insight Gems</strong>
+        <Gem /> <strong>{s.gems} Poin</strong>
         <span>Didapat dari progres, tanpa pembayaran.</span>
       </div>
       <div className="shop-grid">
@@ -467,7 +466,7 @@ export function Shop({
             disabled={s.gems < 20 || s.freezes >= 2}
             onClick={() => void act({ type: "buy", item: "freeze" })}
           >
-            <Gem size={18} /> 20 gems
+            <Gem size={18} /> 20 poin
           </button>
         </section>
         <section className="g-card">
@@ -489,7 +488,7 @@ export function Shop({
               </>
             ) : (
               <>
-                <Gem size={18} /> 35 gems
+                <Gem size={18} /> 35 poin
               </>
             )}
           </button>
@@ -681,44 +680,12 @@ export function Social({
         ))}
       </section>
       <section className="g-card">
-        <div className="g-section-head">
-          <h2>
-            <Trophy size={22} /> Liga {data.tier || "Tunas"}
-          </h2>
-          <span>Minggu ini</span>
-        </div>
-        <div className="league-tiers">
-          {["Tunas", "Kuncup", "Mekar", "Berbunga", "Berbuah"].map((t, i) => (
-            <div
-              key={t}
-              className={t === (data.tier || "Tunas") ? "active" : ""}
-            >
-              <Trophy size={20} />
-              <small>
-                {i + 1}. {t}
-              </small>
-            </div>
-          ))}
-        </div>
+        <h2>Progres squad</h2>
         <p>
-          Kumpulkan XP bersama penjelajah lain. Peringkat diperbarui dari
-          aktivitas yang tersimpan.
+          Saling mendukung melalui langkah kecil. Liga lintas-squad belum
+          diaktifkan pada revamp ini.
         </p>
-        {data.league.length ? (
-          data.league.map((p, i) => (
-            <div className="leader-row" key={i}>
-              <span>{i + 1}</span>
-              <strong>{p.name}</strong>
-              <b>{p.xp} XP</b>
-            </div>
-          ))
-        ) : (
-          <div className="g-empty">
-            <Trophy />
-            <p>Belum ada peserta liga yang bisa ditampilkan.</p>
-            <span>XP minggumu: {weeklyXP(s)}</span>
-          </div>
-        )}
+        <p>XP minggumu: {weeklyXP(s)}</p>
       </section>
     </>
   );
