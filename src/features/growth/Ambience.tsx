@@ -15,11 +15,11 @@ export default function Ambience({ locale }: { locale: Locale }) {
         0,
         Math.min(
           1,
-          Number(localStorage.getItem("tarsio:music-volume") || ".25"),
+          Number(localStorage.getItem("tarsio:music-volume") || ".2"),
         ),
       );
     } catch {
-      return 0.25;
+      return 0.2;
     }
   });
   function stop() {
@@ -47,20 +47,30 @@ export default function Ambience({ locale }: { locale: Locale }) {
     if (audio.current) return;
     setPlaying(true);
     try {
-      const ctx = new AudioContext();
+      const Context =
+        window.AudioContext ||
+        (window as typeof window & { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
+      if (!Context) throw new Error("AudioContext unavailable");
+      const ctx = new Context();
       audio.current = ctx;
       const output = ctx.createGain();
+      const warmth = ctx.createBiquadFilter();
       master.current = output;
-      output.gain.value = volume * 0.17;
-      output.connect(ctx.destination);
+      output.gain.value = volume * 0.2;
+      warmth.type = "lowpass";
+      warmth.frequency.value = 1450;
+      warmth.Q.value = 0.35;
+      output.connect(warmth);
+      warmth.connect(ctx.destination);
       await ctx.resume();
       if (audio.current !== ctx) return;
       let bar = 0;
       const chords = [
-        [130.81, 164.81, 196, 246.94],
-        [110, 130.81, 164.81, 220],
-        [87.31, 130.81, 174.61, 220],
-        [98, 146.83, 196, 246.94],
+        [130.81, 164.81, 196, 246.94], // Cmaj7
+        [110, 130.81, 164.81, 220], // Am7
+        [87.31, 130.81, 174.61, 220], // Fmaj7
+        [98, 146.83, 196, 246.94], // Gsus2
       ];
       const schedule = () => {
         if (ctx.state === "closed") return;
@@ -68,15 +78,17 @@ export default function Ambience({ locale }: { locale: Locale }) {
         chords[bar++ % chords.length].forEach((hz, i) => {
           const osc = ctx.createOscillator(),
             gain = ctx.createGain();
-          osc.type = "sine";
+          osc.type = i === 0 ? "triangle" : "sine";
+          osc.detune.value = i % 2 ? 3 : -3;
           osc.frequency.value = hz * (i === 3 ? 2 : 1);
           gain.gain.setValueAtTime(0, now);
-          gain.gain.linearRampToValueAtTime(0.22, now + 1.2 + i * 0.1);
-          gain.gain.linearRampToValueAtTime(0, now + 5.8);
+          gain.gain.linearRampToValueAtTime(0.14, now + 1.5 + i * 0.12);
+          gain.gain.linearRampToValueAtTime(0.09, now + 3.8);
+          gain.gain.linearRampToValueAtTime(0, now + 6.6);
           osc.connect(gain);
           gain.connect(output);
           osc.start(now);
-          osc.stop(now + 6);
+          osc.stop(now + 6.8);
           osc.onended = () => {
             osc.disconnect();
             gain.disconnect();
@@ -84,7 +96,7 @@ export default function Ambience({ locale }: { locale: Locale }) {
         });
       };
       schedule();
-      timer.current = setInterval(schedule, 5000);
+      timer.current = setInterval(schedule, 5600);
       setPlaying(true);
       setError("");
     } catch {
@@ -106,7 +118,7 @@ export default function Ambience({ locale }: { locale: Locale }) {
       <p>
         {t(
           "Nada ambient lembut untuk menemani refleksi. Musik berhenti saat tab ditinggalkan.",
-          "Soft ambient notes to accompany reflection. Music pauses when you leave this tab.",
+          "A soft ambient soundscape for reflection. Music pauses when you leave this tab.",
         )}
       </p>
       <div className="button-row">
@@ -134,7 +146,7 @@ export default function Ambience({ locale }: { locale: Locale }) {
               setVolume(v);
               if (master.current && audio.current)
                 master.current.gain.setTargetAtTime(
-                  v * 0.17,
+                  v * 0.2,
                   audio.current.currentTime,
                   0.1,
                 );

@@ -1,3 +1,4 @@
+import { withDeadline } from "./request";
 import { useEffect, useRef, useState } from "react";
 import { Send, X, MessageCircle, RotateCcw } from "lucide-react";
 import { TarsyMascot } from "@/components/TarsyMascot";
@@ -10,11 +11,13 @@ export default function TarsyChat({
   locale,
   close,
   login,
+  accountLoading = false,
 }: {
   owner: string;
   locale: Locale;
   close: () => void;
   login: () => void;
+  accountLoading?: boolean;
 }) {
   const t = (id: string, en: string) => (locale === "en" ? en : id);
   const [messages, setMessages] = useState<Message[]>([]),
@@ -25,57 +28,99 @@ export default function TarsyChat({
   const alive = useRef(true),
     bottom = useRef<HTMLDivElement>(null),
     ref = useDialog(close);
-  const ready = !!cloud && owner !== "device";
+  const hasAccount = !!cloud && owner !== "device";
+  const ready = hasAccount && !accountLoading;
   useEffect(() => {
     alive.current = true;
     return () => {
       alive.current = false;
     };
   }, []);
-  useEffect(
-    () => bottom.current?.scrollIntoView({ block: "nearest" }),
-    [messages, busy],
-  );
+  useEffect(() => {
+    bottom.current?.scrollIntoView({ block: "nearest" });
+  }, [messages, busy]);
   async function send(e: React.FormEvent) {
     e.preventDefault();
     if (!cloud || !ready || !consent || busy || !draft.trim()) return;
     setBusy(true);
     setError("");
-    const next = [
-      ...messages,
-      { role: "user" as const, content: draft.trim() },
-    ];
+    const base =
+      error && messages[messages.length - 1]?.role === "user"
+        ? messages.slice(0, -1)
+        : messages;
+    const next = [...base, { role: "user" as const, content: draft.trim() }];
+    setMessages(next);
     try {
       const {
         data: { user },
-      } = await cloud.auth.getUser();
+      } = await withDeadline(cloud.auth.getUser());
       if (!alive.current) return;
       if (user?.id !== owner) throw Error("account");
-      const { data, error } = await cloud.functions.invoke("chat-reply", {
-        body: {
-          messages: next
-            .slice(-20)
-            .map(({ role, content }) => ({ role, content })),
-          lang: locale,
-          user_id: owner,
-          consent: true,
-        },
-      });
+      const { data, error } = await withDeadline(
+        cloud.functions.invoke("chat-reply", {
+          body: {
+            messages: next
+              .slice(-20)
+              .map(({ role, content }) => ({ role, content })),
+            lang: locale,
+            user_id: owner,
+            consent: true,
+          },
+        }),
+        35000,
+      );
       if (!alive.current) return;
-      if (error || !data?.reply) throw Error("provider");
+      if (error) {
+        const context = (error as { context?: Response }).context;
+        let code = "provider";
+        if (context instanceof Response) {
+          const details = await withDeadline(
+            context.clone().json(),
+            3000,
+          ).catch(() => null);
+          if (details?.error === "GEMINI_NOT_CONFIGURED") code = "gemini";
+          else if (context.status === 401 || context.status === 403)
+            code = "account";
+        }
+        throw Error(code);
+      }
+      const payload = data as { reply?: unknown; fallback?: boolean } | null;
+      if (typeof payload?.reply !== "string" || !payload.reply.trim())
+        throw Error("provider");
       setMessages([
         ...next,
-        { role: "tarsy", content: data.reply, fallback: !!data.fallback },
+        {
+          role: "tarsy",
+          content: payload.reply.trim(),
+          fallback: !!payload.fallback,
+        },
       ]);
       setDraft("");
-    } catch {
-      if (alive.current)
+    } catch (e) {
+      if (alive.current) {
+        const code = e instanceof Error ? e.message : "provider";
         setError(
-          t(
-            "Tarsy belum bisa merespons. Pesanmu tetap ada; coba lagi setelah koneksi tersedia.",
-            "Tarsy could not respond. Your message is still here; retry when the connection is available.",
-          ),
+          code === "REQUEST_TIMEOUT"
+            ? t(
+                "Tarsy belum merespons dalam batas waktu. Pesanmu tetap ada; kamu bisa mencoba lagi.",
+                "Tarsy did not respond in time. Your message is still here; you can retry.",
+              )
+            : code === "account"
+              ? t(
+                  "Sesi akun perlu diperbarui. Buka akun untuk masuk kembali.",
+                  "Your session needs refreshing. Open your account to sign in again.",
+                )
+              : code === "gemini"
+                ? t(
+                    "Layanan Gemini belum dikonfigurasi. Pesanmu tetap di sesi ini; coba lagi setelah layanan diaktifkan.",
+                    "Gemini is not configured yet. Your message stays in this session; retry once the service is enabled.",
+                  )
+                : t(
+                    "Tarsy belum bisa merespons. Pesanmu tetap ada; coba lagi setelah koneksi tersedia.",
+                    "Tarsy could not respond. Your message is still here; retry when the connection is available.",
+                  ),
         );
+      }
     } finally {
       if (alive.current) setBusy(false);
     }
@@ -87,6 +132,7 @@ export default function TarsyChat({
         role="dialog"
         aria-modal="true"
         aria-label={t("Ngobrol dengan Tarsy", "Talk to Tarsy")}
+        aria-busy={accountLoading || busy}
         className="tarsy-chat"
       >
         <header>
@@ -137,17 +183,36 @@ export default function TarsyChat({
           )}
           <div ref={bottom} />
         </div>
-        {!ready ? (
+        {accountLoading ? (
+          <div className="g-callout" role="status">
+            <p>
+              {t(
+                "Sebentar, Tarsy sedang menyiapkan ruang akunmu…",
+                "One moment, Tarsy is preparing your account space…",
+              )}
+            </p>
+          </div>
+        ) : !hasAccount ? (
           <div className="g-callout">
             <p>
               {t(
-                "Chat online membutuhkan akun yang tersambung. Pada preview ini, chat akan aktif setelah layanan akun dan Gemini dikonfigurasi.",
-                "Online chat requires a connected account. In this preview, chat becomes available once account services and Gemini are configured.",
+                "Chat membutuhkan akun yang terhubung. Pesan hanya digunakan dalam percakapan ini dan dihapus dari tampilan ketika kamu menutup chat.",
+                "Chat requires a connected account. Messages are used for this conversation and cleared from the interface when you close it.",
               )}
             </p>
-            <button className="g-btn secondary" onClick={login}>
-              {t("Buka akun", "Open account")} <MessageCircle size={18} />
-            </button>
+            {cloud ? (
+              <button className="g-btn secondary" onClick={login}>
+                {t("Hubungkan akun", "Connect account")}{" "}
+                <MessageCircle size={18} />
+              </button>
+            ) : (
+              <p role="status">
+                {t(
+                  "Chat online belum diaktifkan. Kamu tetap bisa mengisi quest dan refleksi di perjalananmu.",
+                  "Online chat is not enabled yet. You can still complete quests and reflections on your journey.",
+                )}
+              </p>
+            )}
           </div>
         ) : (
           <label className="chat-consent">
@@ -168,6 +233,27 @@ export default function TarsyChat({
           <p className="g-error" role="alert">
             {error}
           </p>
+        )}
+        {ready && !messages.length && (
+          <div
+            className="button-row"
+            aria-label={t("Mulai cerita", "Conversation starters")}
+          >
+            {[
+              t("Aku butuh didengarkan", "I need someone to listen"),
+              t("Bantu aku menata pikiran", "Help me sort my thoughts"),
+              t("Aku ingin refleksi hari ini", "I want to reflect on today"),
+            ].map((prompt) => (
+              <button
+                type="button"
+                className="g-btn small secondary"
+                key={prompt}
+                onClick={() => setDraft(prompt)}
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
         )}
         <form onSubmit={send}>
           <label className="sr-only" htmlFor="tarsy-message">

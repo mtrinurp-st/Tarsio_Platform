@@ -1,3 +1,4 @@
+import { withDeadline } from "./request";
 import { Copy } from "./copy";
 import { useDialog } from "./dialog";
 import { useEffect, useState } from "react";
@@ -259,21 +260,25 @@ export function AuthModal({
     setBusy(true);
     try {
       if (mode === "login") {
-        const { error } = await cloud.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
+        const { error } = await withDeadline(
+          cloud.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+          }),
+        );
         if (error) throw error;
         close();
       } else if (mode === "register") {
-        const { data, error } = await cloud.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            data: { display_name: name.trim(), language_pref: locale },
-            emailRedirectTo: location.origin + location.pathname,
-          },
-        });
+        const { data, error } = await withDeadline(
+          cloud.auth.signUp({
+            email: email.trim(),
+            password,
+            options: {
+              data: { display_name: name.trim(), language_pref: locale },
+              emailRedirectTo: location.origin + location.pathname,
+            },
+          }),
+        );
         if (error) throw error;
         if (data.session) close();
         else
@@ -284,9 +289,11 @@ export function AuthModal({
             ),
           );
       } else if (mode === "reset") {
-        const { error } = await cloud.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: location.origin + location.pathname,
-        });
+        const { error } = await withDeadline(
+          cloud.auth.resetPasswordForEmail(email.trim(), {
+            redirectTo: location.origin + location.pathname,
+          }),
+        );
         if (error) throw error;
         setMessage(
           t(
@@ -295,11 +302,13 @@ export function AuthModal({
           ),
         );
       } else if (mode === "resend") {
-        const { error } = await cloud.auth.resend({
-          type: "signup",
-          email: email.trim(),
-          options: { emailRedirectTo: location.origin + location.pathname },
-        });
+        const { error } = await withDeadline(
+          cloud.auth.resend({
+            type: "signup",
+            email: email.trim(),
+            options: { emailRedirectTo: location.origin + location.pathname },
+          }),
+        );
         if (error) throw error;
         setMessage(
           t(
@@ -308,7 +317,9 @@ export function AuthModal({
           ),
         );
       } else {
-        const { error } = await cloud.auth.updateUser({ password });
+        const { error } = await withDeadline(
+          cloud.auth.updateUser({ password }),
+        );
         if (error) throw error;
         setMessage(
           t(
@@ -322,25 +333,30 @@ export function AuthModal({
     } catch (e) {
       const code = (e as { code?: string }).code;
       setError(
-        code === "invalid_credentials"
+        (e as Error).message === "REQUEST_TIMEOUT"
           ? t(
-              "Email atau kata sandi belum cocok. Coba lagi.",
-              "The email or password doesn’t match. Please retry.",
+              "Koneksi terlalu lama. Coba lagi; data tidak dihapus.",
+              "The connection is taking too long. Please retry; no data has been erased.",
             )
-          : code === "email_not_confirmed"
+          : code === "invalid_credentials"
             ? t(
-                "Konfirmasi email terlebih dahulu, atau kirim ulang tautannya.",
-                "Confirm your email first, or resend the link.",
+                "Email atau kata sandi belum cocok. Coba lagi.",
+                "The email or password doesn’t match. Please retry.",
               )
-            : code === "over_email_send_rate_limit"
+            : code === "email_not_confirmed"
               ? t(
-                  "Tunggu sebentar sebelum meminta email lagi.",
-                  "Please wait before requesting another email.",
+                  "Konfirmasi email terlebih dahulu, atau kirim ulang tautannya.",
+                  "Confirm your email first, or resend the link.",
                 )
-              : t(
-                  "Permintaan belum berhasil. Periksa koneksi dan coba lagi.",
-                  "The request didn’t go through. Check your connection and retry.",
-                ),
+              : code === "over_email_send_rate_limit"
+                ? t(
+                    "Tunggu sebentar sebelum meminta email lagi.",
+                    "Please wait before requesting another email.",
+                  )
+                : t(
+                    "Permintaan belum berhasil. Periksa koneksi dan coba lagi.",
+                    "The request didn’t go through. Check your connection and retry.",
+                  ),
       );
     } finally {
       setBusy(false);

@@ -31,6 +31,13 @@ Full bilingual parity, account preference sync across devices, full retention/de
 
 Draft content is intentionally the only content given to moderators after explicit submission. Private UGC responses are separate from existing Blueprint data and have their own export button. Saving a response is explicit; it is not autosaved while typing. A quest withdrawal during completion makes the server reject that completion.
 
+## Revamp 0.7 — Tarsy handoff and safe-place ambience
+
+- The Tarsy entry point stays visible while account authentication is open. A successful session handoff remounts the chat for the new owner instead of leaving a blank panel; account loading now has an explicit status message and failed sends keep the user's message in the in-memory session.
+- Gemini configuration errors are surfaced as a translated, actionable message. The UI does not pretend that an unconfigured provider produced an AI response, and the existing server-side consent/auth boundaries remain unchanged.
+- Non-interactive mascot illustrations no longer render the legacy “Klik aku kalau mau ngobrol!” bubble. The single fixed chat button remains the conversation entry point, while genuinely clickable mascot instances can still provide their own hint.
+- Ambient playback now uses a filtered, low-volume chord pad with slow attack/release and gentle detuning for a warmer, less distracting soundscape. It remains manual, stops when the tab is hidden, and makes no external audio request.
+
 ## Revamp 0.6 — preview and interaction follow-up
 
 - Visible `Revamp 0.6` label in the footer/settings identifies the new frontend. The canonical private review URL is unchanged. The GitHub PR remains draft; the repository's default branch and unrelated Bolt/custom-domain deployments are not updated by publishing the private review Site.

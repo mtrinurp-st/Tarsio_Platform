@@ -1,3 +1,4 @@
+import { withDeadline } from "./request";
 import { Copy, CopyProvider } from "./copy";
 import Ambience from "./Ambience";
 import TarsyChat from "./TarsyChat";
@@ -185,7 +186,7 @@ export default function GrowthApp() {
       identity.current = nextId;
       setUserId(nextId);
       setActive(null);
-      setChat(false);
+      if (!id) setChat(false);
       setLoading(!!id);
       setCloudReady(false);
       setIsAdmin(false);
@@ -228,13 +229,15 @@ export default function GrowthApp() {
             ? "Draf lokal · sinkronisasi tertunda"
             : "Tersimpan di akun",
         );
-        const [{ data: role }, { data: content }] = await Promise.all([
-          cloud!.from("profiles").select("role").eq("id", id).single(),
-          cloud!
-            .from("growth_content")
-            .select("schema_json")
-            .order("sort_order"),
-        ]);
+        const [{ data: role }, { data: content }] = await withDeadline(
+          Promise.all([
+            cloud!.from("profiles").select("role").eq("id", id).single(),
+            cloud!
+              .from("growth_content")
+              .select("schema_json")
+              .order("sort_order"),
+          ]),
+        );
         if (cancelled || identity.current !== nextId) return;
         setIsAdmin(role?.role === "admin");
         if (content?.length)
@@ -250,8 +253,7 @@ export default function GrowthApp() {
         if (!cancelled && identity.current === nextId) setLoading(false);
       }
     }
-    cloud.auth
-      .getSession()
+    withDeadline(cloud.auth.getSession())
       .then(({ data }) => sessionChanged(data.session?.user.id))
       .catch((e) => notice(e.message));
     const { data } = cloud.auth.onAuthStateChange((event, session) => {
@@ -696,6 +698,22 @@ export default function GrowthApp() {
               {loading && (
                 <div className="g-callout" role="status">
                   <Copy text="Memuat progres akun…" />
+                </div>
+              )}
+              {userId !== "device" && !loading && !cloudReady && (
+                <div className="g-callout" role="alert">
+                  <p>
+                    {t(
+                      "Akun terhubung, tetapi progres belum dapat dimuat. Draf di perangkat tetap tersedia. Muat ulang untuk mencoba koneksi lagi.",
+                      "Signed in, but progress could not load. Device drafts remain available. Reload to retry the connection.",
+                    )}
+                  </p>
+                  <button
+                    className="g-btn secondary"
+                    onClick={() => location.reload()}
+                  >
+                    {t("Coba koneksi lagi", "Retry connection")}
+                  </button>
                 </div>
               )}
               {userId === "device" && (
@@ -1205,7 +1223,7 @@ export default function GrowthApp() {
                       </button>
                     )}
                     <p className="release-marker">
-                      Tarsio · Revamp 0.6 · 11 Sep 2026
+                      Tarsio · Revamp 0.8 · 12 Sep 2026
                     </p>
                     <details className="g-callout">
                       <summary>
@@ -1432,7 +1450,7 @@ export default function GrowthApp() {
             )}
           </div>
           <footer className="g-site-footer">
-            <span className="release-marker">Revamp 0.6</span>
+            <span className="release-marker">Revamp 0.8</span>
             <span>
               <Copy text="tarsio. · Ruang aman untuk bertumbuh" />
             </span>
@@ -1453,14 +1471,14 @@ export default function GrowthApp() {
           <span>{t("Cerita ke Tarsy", "Talk to Tarsy")}</span>
         </button>
 
-        {chat && (
+        {chat && !auth && (
           <TarsyChat
             key={userId}
             owner={userId}
             locale={preferences.locale}
+            accountLoading={loading}
             close={() => setChat(false)}
             login={() => {
-              setChat(false);
               setAuth(true);
             }}
           />

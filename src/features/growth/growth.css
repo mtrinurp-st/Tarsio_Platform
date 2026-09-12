@@ -2749,6 +2749,12 @@ body {
 .g-app .hero-mascot .tarsy-speech-bubble {
   display: none;
 }
+.g-app .tarsy-speech-bubble {
+  display: none;
+}
+.g-app .tarsy-mascot:not(.is-interactive) {
+  cursor: default;
+}
 .g-app .journey-copy p {
   font-size: 16px;
   max-width: 32ch;

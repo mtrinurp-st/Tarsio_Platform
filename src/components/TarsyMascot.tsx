@@ -43,7 +43,7 @@ export function TarsyMascot({ size = 120, mood = 'idle', lang, onClick }: {
 
   return (
     <div
-      className={`tarsy-mascot ${bounce ? 'bounce' : ''} ${wiggle ? 'wiggle' : ''} mood-${mood}`}
+      className={`tarsy-mascot ${onClick ? 'is-interactive' : ''} ${bounce ? 'bounce' : ''} ${wiggle ? 'wiggle' : ''} mood-${mood}`}
       style={{ width: size, height: size }}
       onClick={onClick}
       role={onClick ? 'button' : 'img'}
@@ -122,7 +122,7 @@ export function TarsyMascot({ size = 120, mood = 'idle', lang, onClick }: {
           </>
         )}
       </svg>
-      {mood === 'idle' && (
+      {mood === 'idle' && onClick && (
         <div className="tarsy-speech-bubble">
           {translate(lang, 'tarsy.idle')}
         </div>
