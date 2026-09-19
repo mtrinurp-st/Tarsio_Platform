@@ -21,3 +21,15 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+.env
+.env.*
+!.env.example
+.sites-runtime/
+.test-runtime/
+
+# Supabase CLI cache
+supabase/.temp/
+
+# Rebuilt and checksum-verified from source parts by npm install/build.
+src/assets/The_Gentle_Climb.mp3
